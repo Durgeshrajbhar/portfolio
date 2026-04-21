@@ -102,7 +102,7 @@ export default function BlogPost() {
               ul: ({ node, ...props }) => <ul className="list-disc list-inside mb-4 space-y-2" {...props} />,
               ol: ({ node, ...props }) => <ol className="list-decimal list-inside mb-4 space-y-2" {...props} />,
               li: ({ node, ...props }) => <li className="text-gray-300 ml-4" {...props} />,
-              code: ({ node, inline, ...props }) =>
+              code: ({ node, inline, className, children, ...props }: any) =>
                 inline ? (
                   <code className="bg-gray-800 text-blue-300 px-2 py-1 rounded text-sm" {...props} />
                 ) : (
