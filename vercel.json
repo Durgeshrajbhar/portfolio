@@ -1,0 +1,12 @@
+{
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "env": {
+    "BLOB_READ_WRITE_TOKEN": {
+      "description": "Vercel Blob read/write token for data storage",
+      "required": true
+    }
+  }
+}

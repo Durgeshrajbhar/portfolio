@@ -1,5 +1,4 @@
-import fs from "fs";
-import path from "path";
+import { put, get } from "@vercel/blob";
 
 interface ContactMessage {
   name: string;
@@ -8,37 +7,40 @@ interface ContactMessage {
   submittedAt: string;
 }
 
-const DATA_FILE = path.join(process.cwd(), "data", "contacts.json");
+const BLOB_KEY = "contact-messages.json";
 
-// Ensure data directory exists
-function ensureDataDir() {
-  const dir = path.dirname(DATA_FILE);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-}
-
-// Read existing messages
-function getMessages(): ContactMessage[] {
-  ensureDataDir();
+// Read existing messages from Blob
+async function getMessages(): Promise<ContactMessage[]> {
   try {
-    if (fs.existsSync(DATA_FILE)) {
-      const data = fs.readFileSync(DATA_FILE, "utf-8");
-      return JSON.parse(data);
+    const result = await get(BLOB_KEY, {
+      access: "private",
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+    });
+    if (result && result.statusCode === 200) {
+      const reader = result.stream.getReader();
+      const { value } = await reader.read();
+      if (value) {
+        const text = new TextDecoder().decode(value);
+        return JSON.parse(text);
+      }
     }
   } catch (error) {
-    console.error("Error reading contact data:", error);
+    console.error("Error reading contact data from Blob:", error);
   }
   return [];
 }
 
-// Save messages
-function saveMessages(messages: ContactMessage[]) {
-  ensureDataDir();
+// Save messages to Blob
+async function saveMessages(messages: ContactMessage[]): Promise<void> {
   try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(messages, null, 2));
+    await put(BLOB_KEY, JSON.stringify(messages, null, 2), {
+      access: "private",
+      contentType: "application/json",
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+    });
   } catch (error) {
-    console.error("Error saving contact data:", error);
+    console.error("Error saving contact data to Blob:", error);
+    throw error;
   }
 }
 
@@ -68,7 +70,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const messages = getMessages();
+    const messages = await getMessages();
 
     // Add new message
     messages.push({
@@ -78,7 +80,7 @@ export async function POST(request: Request) {
       submittedAt: new Date().toISOString(),
     });
 
-    saveMessages(messages);
+    await saveMessages(messages);
 
     return Response.json(
       { message: "Message sent successfully", email },
@@ -95,10 +97,10 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
-    const messages = getMessages();
-    return Response.json({ 
+    const messages = await getMessages();
+    return Response.json({
       count: messages.length,
-      messages: messages
+      messages: messages,
     });
   } catch (error) {
     console.error("Contact API error:", error);

@@ -1,42 +1,46 @@
-import fs from "fs";
-import path from "path";
+import { put, get } from "@vercel/blob";
 
 interface NewsletterSubscriber {
   email: string;
   subscribedAt: string;
 }
 
-const DATA_FILE = path.join(process.cwd(), "data", "newsletter.json");
+const BLOB_KEY = "newsletter-subscribers.json";
 
-// Ensure data directory exists
-function ensureDataDir() {
-  const dir = path.dirname(DATA_FILE);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-}
-
-// Read existing subscribers
-function getSubscribers(): NewsletterSubscriber[] {
-  ensureDataDir();
+// Read existing subscribers from Blob
+async function getSubscribers(): Promise<NewsletterSubscriber[]> {
   try {
-    if (fs.existsSync(DATA_FILE)) {
-      const data = fs.readFileSync(DATA_FILE, "utf-8");
-      return JSON.parse(data);
+    const result = await get(BLOB_KEY, {
+      access: "private",
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+    });
+    if (result && result.statusCode === 200) {
+      const reader = result.stream.getReader();
+      const { value } = await reader.read();
+      if (value) {
+        const text = new TextDecoder().decode(value);
+        return JSON.parse(text);
+      }
     }
   } catch (error) {
-    console.error("Error reading newsletter data:", error);
+    console.error("Error reading newsletter data from Blob:", error);
   }
   return [];
 }
 
-// Save subscribers
-function saveSubscribers(subscribers: NewsletterSubscriber[]) {
-  ensureDataDir();
+// Save subscribers to Blob
+async function saveSubscribers(
+  subscribers: NewsletterSubscriber[]
+): Promise<void> {
   try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(subscribers, null, 2));
+    await put(BLOB_KEY, JSON.stringify(subscribers, null, 2), {
+      access: "private",
+      contentType: "application/json",
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+    });
   } catch (error) {
-    console.error("Error saving newsletter data:", error);
+    console.error("Error saving newsletter data to Blob:", error);
+    throw error;
   }
 }
 
@@ -51,7 +55,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const subscribers = getSubscribers();
+    const subscribers = await getSubscribers();
 
     // Check if already subscribed
     if (subscribers.some((sub) => sub.email === email)) {
@@ -67,7 +71,7 @@ export async function POST(request: Request) {
       subscribedAt: new Date().toISOString(),
     });
 
-    saveSubscribers(subscribers);
+    await saveSubscribers(subscribers);
 
     return Response.json(
       { message: "Successfully subscribed to newsletter", email },
@@ -84,10 +88,10 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
-    const subscribers = getSubscribers();
-    return Response.json({ 
+    const subscribers = await getSubscribers();
+    return Response.json({
       count: subscribers.length,
-      subscribers: subscribers
+      subscribers: subscribers,
     });
   } catch (error) {
     console.error("Newsletter API error:", error);
