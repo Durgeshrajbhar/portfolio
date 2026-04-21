@@ -3,6 +3,12 @@
 :root {
   --background: #0a0a0a;
   --foreground: #ffffff;
+  --primary: #00FFA3;
+  --radius: 0.5rem;
+}
+
+html {
+  background-color: var(--background);
 }
 
 body {

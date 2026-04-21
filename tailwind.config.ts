@@ -11,6 +11,10 @@ const config: Config = {
         primary: "#00FFA3",
         bg: "#0A0A0A",
       },
+      backgroundColor: {
+        black: "#000000",
+        "gray-900": "#111111",
+      },
     },
   },
   plugins: [],
