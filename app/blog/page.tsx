@@ -50,7 +50,7 @@ export default function Blog() {
   return (
     <div className="min-h-screen p-8 sm:p-10">
       <div className="mb-12">
-        <h1 className="text-4xl md:text-5xl mb-2 font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+        <h1 className="text-4xl md:text-5xl mb-2 font-bold bg-linear-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
           Research & Blogs
         </h1>
         <p className="text-gray-400 text-lg">Thoughts on web development, performance, and technology</p>
@@ -67,14 +67,14 @@ export default function Blog() {
           {blogs.map((blog) => (
             <div
               key={blog.slug}
-              className="group bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700 rounded-lg overflow-hidden hover:border-blue-500 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/20 h-full flex flex-col"
+              className="group bg-linear-to-br from-gray-900 to-gray-800 border border-gray-700 rounded-lg overflow-hidden hover:border-blue-500 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/20 h-full flex flex-col"
             >
               <div className="p-6 flex flex-col h-full">
                 <h2 className="text-xl font-bold mb-3 text-white group-hover:text-blue-400 transition-colors line-clamp-2">
                   {blog.title}
                 </h2>
                 
-                <p className="text-gray-400 mb-4 flex-grow line-clamp-3 text-sm leading-relaxed">
+                <p className="text-gray-400 mb-4 grow line-clamp-3 text-sm leading-relaxed">
                   {blog.excerpt}
                 </p>
 
@@ -83,7 +83,7 @@ export default function Blog() {
                     {blog.tags.slice(0, 2).map((tag) => (
                       <span
                         key={tag}
-                        className="text-xs bg-gradient-to-r from-blue-900 to-purple-900 text-blue-300 px-2 py-1 rounded-full"
+                        className="text-xs bg-linear-to-r from-blue-900 to-purple-900 text-blue-300 px-2 py-1 rounded-full"
                       >
                         {tag}
                       </span>
@@ -105,7 +105,7 @@ export default function Blog() {
 
                 <Link
                   href={`/blog/${blog.slug}`}
-                  className="w-full inline-block bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-semibold py-2 px-4 rounded transition-all duration-300 transform group-hover:scale-105 text-center"
+                  className="w-full inline-block bg-linear-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-semibold py-2 px-4 rounded transition-all duration-300 transform group-hover:scale-105 text-center"
                 >
                   Read More →
                 </Link>
