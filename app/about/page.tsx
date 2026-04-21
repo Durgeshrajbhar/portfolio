@@ -10,17 +10,59 @@ export default function About() {
   const [contactStatus, setContactStatus] = useState("");
   const [newsletterStatus, setNewsletterStatus] = useState("");
 
-  const handleContactSubmit = (e: React.FormEvent) => {
+  const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setContactStatus("Message sent! I'll get back to you soon.");
-    setContactForm({ name: "", email: "", message: "" });
+    setContactStatus("Sending...");
+    
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(contactForm),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setContactStatus("Message sent! I'll get back to you soon.");
+        setContactForm({ name: "", email: "", message: "" });
+        console.log("[v0] Contact message saved:", data);
+      } else {
+        setContactStatus(data.error || "Failed to send message");
+      }
+    } catch (error) {
+      setContactStatus("Failed to send message");
+      console.error("[v0] Contact form error:", error);
+    }
+
     setTimeout(() => setContactStatus(""), 3000);
   };
 
-  const handleNewsletterSubmit = (e: React.FormEvent) => {
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setNewsletterStatus("Thanks for subscribing!");
-    setNewsletterEmail("");
+    setNewsletterStatus("Subscribing...");
+
+    try {
+      const response = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: newsletterEmail }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setNewsletterStatus("Thanks for subscribing!");
+        setNewsletterEmail("");
+        console.log("[v0] Newsletter subscription saved:", data);
+      } else {
+        setNewsletterStatus(data.error || "Failed to subscribe");
+      }
+    } catch (error) {
+      setNewsletterStatus("Failed to subscribe");
+      console.error("[v0] Newsletter form error:", error);
+    }
+
     setTimeout(() => setNewsletterStatus(""), 3000);
   };
 
